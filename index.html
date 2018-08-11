@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Countdown Timer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel='stylesheet' type='text/css' href='main.css'/>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Orbitron" />
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background: #000;
+            font-family: "Orbitron", Helvetica, sans-serif;
+        }
+
+        #min {
+            width: 250px;
+            background-color: black;
+            text-align: right;
+            border: none;
+        }
+        #sec {
+            width: 250px;
+            background-color: black;
+            text-align: left;
+            border: none;
+        }
+
+        #time {
+            font-size: 123px;
+            color: #00ff00;
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
+        .middle {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 41%;
+        }
+
+        #btn_group {
+            display: block;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="middle">
+        <div id="time">
+            <input placeholder="mm" type="text" id="min" value="" />
+            <span id="divider">:</span>
+            <input placeholder="ss" type="text" id="sec" value="" />
+        </div>
+        <div id="btn_group" class="btn-group">
+            <button class="button small btn-4 btn-primary" onclick="Timer.start()">Start</button>
+            <button class="button small btn-4 btn-default" onclick="Timer.reset()">Reset</button>
+        </div>
+    </div>
+    <script defer src='app.js'></script>
+</body>
+</html>
