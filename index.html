@@ -1,19 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" manifest="/CountdownTimer/manifest.appcache">
 <head>
     <title>Countdown Timer</title>
     <base href="/CountdownTimer/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8" />
-    <meta name="manifest" content="/manifest.webmanifest">
-    <meta name="theme-color" content="#000000" />
     <meta name="Description" content="The ultimate countdown timer" />
-    <link rel='stylesheet' type='text/css' href='main.css'/>
-    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel='stylesheet' type='text/css' href='./main.css'/>
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Orbitron" />
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script src="./js/jquery.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
     <style>
         body {
             background: #000;
@@ -67,13 +65,5 @@
         </div>
     </div>
     <script defer src='app.js'></script>
-    <!-- Service Worker -->
-    <script>
-        if('serviceWorker' in navigator) {
-            navigator.serviceWorker
-                .register('/sw.js')
-                .then(function() { console.log("Service Worker Registered"); });
-        }
-    </script>
 </body>
 </html>
