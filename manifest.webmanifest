@@ -1,7 +1,7 @@
 {
   "name": "Countdown Timer",
   "short_name": "Countdown",
-  "start_url": "/",
+  "start_url": "/CountdownTimer",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
