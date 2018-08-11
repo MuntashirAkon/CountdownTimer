@@ -47,6 +47,7 @@ const Timer = {
         this.l_sec = -1;
         this.S_MIN.val(this.addZero(this.MINUTE));
         this.S_SEC.val(this.addZero(this.SECOND));
+        if(this.MINUTE && this.SECOND){}
         this.stop = false;
         // Start countdown
         this.blink.sel = $('#divider');
@@ -78,7 +79,7 @@ const Timer = {
             Timer.blink.do_blink();
         } else {
             // Blink
-            Timer.blink.off();
+            Timer.blink.sel.css('visibility', 'visible');
             Timer.blink.on($('#min, #sec'));
         }
     },
