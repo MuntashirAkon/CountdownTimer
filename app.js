@@ -51,6 +51,7 @@ const Timer = {
         this.stop = false;
         // Start countdown
         this.blink.sel = $('#divider');
+        Timer.blink.sel.css('visibility', 'hidden');
         this.countdown();
     },
     reset: function () {
@@ -65,7 +66,7 @@ const Timer = {
         let s = (new Date()).getSeconds();
         if(s !== Timer.l_sec){
             Timer.l_sec = s;
-            --Timer.c_sec;
+            if(Timer.c_sec) --Timer.c_sec;
             if(Timer.c_sec === 0) {
                 if(Timer.c_min > 0) {
                     Timer.c_sec = 60;
@@ -96,7 +97,7 @@ const Timer = {
         },
         blink: function () {
             if(Timer.blink.blinking)
-                setTimeout(Timer.blink.blink, 700);
+                setTimeout(Timer.blink.blink, 500);
             else{
                 Timer.blink.sel.css('visibility', 'visible');
                 return;
