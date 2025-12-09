@@ -4,9 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='0.9em'%20x='0.5em'%20font-size='80'%3E%E2%8F%B1%3C/text%3E%3C/svg%3E" sizes="any">
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='0.9em'%20x='0.5em'%20font-size='80'%3E%E2%8F%B1%3C/text%3E%3C/svg%3E"
+        sizes="any">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-title" content="Timer">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Timer">
@@ -464,6 +469,34 @@
             setInterval(tick, 100);
         }
 
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake lock released');
+                    });
+                    console.log('Wake lock acquired.');
+                }
+            } catch (err) {
+                console.error('Wake lock error:', err.name, err.message);
+            }
+        }
+
+        async function releaseWakeLock() {
+            try {
+                if (wakeLock) {
+                    await wakeLock.release();
+                    wakeLock = null;
+                }
+            } catch (err) {
+                console.error('Wake lock release error:', err.name, err.message);
+            }
+        }
+
         function showControls() {
             controls.classList.add('visible');
             editBtn.classList.add('visible');
@@ -487,10 +520,12 @@
             if (!state.isRunning) {
                 state.isRunning = true;
                 playPauseBtn.textContent = 'Pause';
+                requestWakeLock();
             } else {
                 state.isRunning = false;
                 playPauseBtn.textContent = 'Play';
                 hideControls();
+                releaseWakeLock();
             }
         }
 
@@ -500,6 +535,7 @@
             state.lastSecondBeep = -1;
             playPauseBtn.textContent = 'Play';
             updateDisplay();
+            releaseWakeLock();
         }
 
         function tick() {
@@ -539,6 +575,7 @@
                         playCompletionSound();
                     }
                     hideControls();
+                    releaseWakeLock();
                 }
             }
         }
