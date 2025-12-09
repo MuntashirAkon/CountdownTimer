@@ -1,69 +1,748 @@
 <!DOCTYPE html>
-<html lang="en" manifest="/CountdownTimer/manifest.appcache">
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='0.9em'%20x='0.5em'%20font-size='80'%3E%E2%8F%B1%3C/text%3E%3C/svg%3E" sizes="any">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Timer">
     <title>Countdown Timer</title>
-    <base href="/CountdownTimer/">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta charset="utf-8" />
-    <meta name="Description" content="The ultimate countdown timer" />
-    <link rel='stylesheet' type='text/css' href='./main.css'/>
-    <link rel="stylesheet" href="./css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Orbitron" />
-    <script src="./js/jquery.min.js"></script>
-    <script src="./js/bootstrap.min.js"></script>
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --fg-primary: #000000;
+            --fg-secondary: #666666;
+            --accent: #000000;
+            --button-bg: rgba(0, 0, 0, 0.08);
+            --button-hover: rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: #000;
-            font-family: "Orbitron", Helvetica, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--fg-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        #min {
-            width: 250px;
-            background-color: black;
-            text-align: right;
-            border: none;
-        }
-        #sec {
-            width: 250px;
-            background-color: black;
-            text-align: left;
-            border: none;
-        }
-
-        #time {
-            font-size: 123px;
-            color: #00ff00;
-            text-align: center;
-            padding-bottom: 10px;
-        }
-
-        .middle {
-            position: fixed;
+        .container {
             width: 100%;
-            height: 100%;
-            top: 41%;
-        }
-
-        #btn_group {
-            display: block;
+            max-width: 80vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
         }
 
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .icon {
+            width: 64px;
+            height: 64px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .icon:not(:empty) {
+            display: flex;
+        }
+
+        .icon:hover {
+            transform: scale(1.05);
+        }
+
+        .title {
+            font-size: 4vw;
+            font-weight: 600;
+            cursor: default;
+            color: var(--fg-primary);
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .subtitle {
+            font-size: 2.5vw;
+            color: var(--fg-secondary);
+            cursor: default;
+            min-height: 2.5vw;
+        }
+
+        .subtitle1 {
+            margin-bottom: 1.5vw;
+            margin-top: 1vw;
+        }
+
+        .subtitle2 {
+            margin-top: 1.5vw;
+        }
+
+        .timer-display {
+            font-size: 7vw;
+            font-weight: 700;
+            letter-spacing: 0.5vw;
+            font-variant-numeric: tabular-nums;
+            font-family: 'Courier New', monospace;
+            margin: 2rem 0;
+            cursor: text;
+            user-select: none;
+            transition: all 0.2s;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: 2px solid transparent;
+            color: var(--fg-primary);
+            min-width: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-display:hover {
+            border-color: var(--accent);
+        }
+
+        .timer-display.editable {
+            border-color: var(--accent);
+            background-color: rgba(0, 0, 0, 0.05);
+            cursor: text;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+
+            button {
+                min-width: 10vw;
+            }
+        }
+
+        .controls.visible {
+            opacity: 1;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            background-color: var(--button-bg);
+            color: var(--fg-color);
+            font-size: 1.5vw;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid var(--accent);
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .edit-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            min-width: none !important;
+        }
+
+        .edit-btn.visible {
+            opacity: 1;
+        }
+
+        .config-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .config-panel.open {
+            display: flex;
+        }
+
+        .config-form {
+            background-color: var(--bg-color);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            color: var(--fg-primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--fg-primary);
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--fg-primary);
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .color-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .color-input-group input[type="color"] {
+            width: 60px;
+            height: 40px;
+            padding: 2px;
+            cursor: pointer;
+        }
+
+        .color-input-group label {
+            flex: 1;
+            font-size: 12px;
+            color: var(--fg-primary);
+            margin: 0;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .form-buttons button {
+            flex: 1;
+        }
+
+        .reset-btn {
+            background-color: rgba(255, 68, 68, 0.1);
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .reset-btn:hover {
+            background-color: rgba(255, 68, 68, 0.2);
+        }
+
+        .icon-input {
+            font-size: 20px;
+        }
+
+        /* Large Display Overrides */
+        @media (min-width: 1200px) {
+            .timer-display {
+                font-size: 7vw;
+                letter-spacing: 2vw;
+                padding: 2rem;
+                margin: 3rem 0;
+            }
+
+            .icon {
+                width: 6vw;
+                height: 6vw;
+                font-size: 4vw;
+            }
+
+            .edit-btn {
+                width: 4vw;
+                height: 4vw;
+                font-size: 2vw;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <div class="middle">
-        <div id="time">
-            <input placeholder="mm" type="text" id="min" value="" />
-            <span id="divider">:</span>
-            <input placeholder="ss" type="text" id="sec" value="" />
+    <div class="container">
+        <div class="header">
+            <div class="icon" id="icon">⏱️</div>
+            <div class="title" id="title">Timer</div>
         </div>
-        <div id="btn_group" class="btn-group">
-            <button class="button small btn-4 btn-primary" onclick="Timer.start()">Start</button>
-            <button class="button small btn-4 btn-default" onclick="Timer.reset()">Reset</button>
+
+        <div class="subtitle subtitle1" id="subtitle1"></div>
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        <div class="subtitle subtitle2" id="subtitle2"></div>
+
+        <div class="controls" id="controls">
+            <button id="playPauseBtn">Play</button>
+            <button id="resetBtn">Reset</button>
         </div>
     </div>
-    <script defer src='app.js'></script>
+
+    <button class="edit-btn" id="editBtn">✎</button>
+
+    <div class="config-panel" id="configPanel">
+        <div class="config-form">
+            <h2 style="margin-bottom: 20px;">Timer Configuration</h2>
+            <form id="configForm">
+                <div class="form-group">
+                    <label for="iconInput">Icon (emoji or text)</label>
+                    <input type="text" id="iconInput" class="icon-input" maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label for="titleInput">Title</label>
+                    <input type="text" id="titleInput" placeholder="Enter title">
+                </div>
+                <div class="form-group">
+                    <label for="subtitle1Input">Subtitle 1</label>
+                    <textarea id="subtitle1Input" placeholder="Enter subtitle 1"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="subtitle2Input">Subtitle 2</label>
+                    <textarea id="subtitle2Input" placeholder="Enter subtitle 2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="timeInput">Time (HH:MM:SS)</label>
+                    <input type="text" id="timeInput" placeholder="00:30:00" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}">
+                </div>
+                <div class="form-group">
+                    <div class="color-input-group">
+                        <label for="bgColorInput">Background</label>
+                        <input type="color" id="bgColorInput">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="color-input-group">
+                        <label for="fgPrimaryColorInput">Primary Color</label>
+                        <input type="color" id="fgPrimaryColorInput">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="color-input-group">
+                        <label for="fgSecondaryColorInput">Secondary Color</label>
+                        <input type="color" id="fgSecondaryColorInput">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="soundCheckbox" style="width: unset;">
+                    <label for="soundCheckbox" style="display: inline-block; font-size: 14px; color: var(--fg-color);">
+                        Play sounds
+                    </label>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" id="saveBtn">Save</button>
+                    <button type="button" id="closeBtn" class="reset-btn">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const CONTROL_HIDE_DELAY = 2000;
+        const CONFIG_KEY = 'timerConfig';
+
+        // State
+        let state = {
+            isRunning: false,
+            isPaused: false,
+            totalSeconds: 1800,
+            remainingSeconds: 1800,
+            hideControlsTimeout: null,
+            playSound: true,
+            lastSecondBeep: -1
+        };
+
+        // DOM elements
+        const timerDisplay = document.getElementById('timerDisplay');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const controls = document.getElementById('controls');
+        const editBtn = document.getElementById('editBtn');
+        const configPanel = document.getElementById('configPanel');
+        const icon = document.getElementById('icon');
+        const title = document.getElementById('title');
+        const subtitle1 = document.getElementById('subtitle1');
+        const subtitle2 = document.getElementById('subtitle2');
+
+        // Form inputs
+        const iconInput = document.getElementById('iconInput');
+        const titleInput = document.getElementById('titleInput');
+        const subtitle1Input = document.getElementById('subtitle1Input');
+        const subtitle2Input = document.getElementById('subtitle2Input');
+        const timeInput = document.getElementById('timeInput');
+        const bgColorInput = document.getElementById('bgColorInput');
+        const fgPrimaryColorInput = document.getElementById('fgPrimaryColorInput');
+        const fgSecondaryColorInput = document.getElementById('fgSecondaryColorInput');
+        const soundCheckbox = document.getElementById('soundCheckbox');
+
+        // Initialize
+        loadConfig();
+        setupEventListeners();
+        updateDisplay();
+
+        // Event listeners
+        function setupEventListeners() {
+            document.addEventListener('mousemove', showControls);
+            timerDisplay.addEventListener('click', () => {
+                if (!state.isRunning && !configPanel.classList.contains('open')) {
+                    enterEditMode();
+                }
+            });
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            resetBtn.addEventListener('click', resetTimer);
+            editBtn.addEventListener('click', openConfig);
+            document.getElementById('saveBtn').addEventListener('click', saveConfig);
+            document.getElementById('closeBtn').addEventListener('click', closeConfig);
+
+            // Timer loop
+            setInterval(tick, 100);
+        }
+
+        function showControls() {
+            controls.classList.add('visible');
+            editBtn.classList.add('visible');
+
+            clearTimeout(state.hideControlsTimeout);
+            state.hideControlsTimeout = setTimeout(() => {
+                controls.classList.remove('visible');
+                editBtn.classList.remove('visible');
+            }, CONTROL_HIDE_DELAY);
+        }
+
+        function hideControls() {
+            clearTimeout(state.hideControlsTimeout);
+            state.hideControlsTimeout = setTimeout(() => {
+                controls.classList.remove('visible');
+                editBtn.classList.remove('visible');
+            }, CONTROL_HIDE_DELAY);
+        }
+
+        function togglePlayPause() {
+            if (!state.isRunning) {
+                state.isRunning = true;
+                playPauseBtn.textContent = 'Pause';
+            } else {
+                state.isRunning = false;
+                playPauseBtn.textContent = 'Play';
+                hideControls();
+            }
+        }
+
+        function resetTimer() {
+            state.isRunning = false;
+            state.remainingSeconds = state.totalSeconds;
+            state.lastSecondBeep = -1;
+            playPauseBtn.textContent = 'Play';
+            updateDisplay();
+        }
+
+        function tick() {
+            if (state.isRunning && state.remainingSeconds > 0) {
+                state.remainingSeconds -= 0.1;
+                if (state.remainingSeconds < 0) {
+                    state.remainingSeconds = 0;
+                }
+                updateDisplay();
+
+                // Check for sound triggers
+                if (state.playSound) {
+                    const remaining = Math.floor(state.remainingSeconds);
+                    const elapsedSeconds = state.totalSeconds - state.remainingSeconds;
+
+                    // 1 hour (3600 seconds) has passed
+                    if (elapsedSeconds > 0 && Math.floor(elapsedSeconds) === 3600 && Math.floor(elapsedSeconds - 0.1) < 3600) {
+                        playCompletionSound();
+                    }
+
+                    // 15 minutes remaining (only if timer > 30 min)
+                    if (state.totalSeconds > 1800 && remaining === 900 && Math.floor(state.remainingSeconds - 0.1) > 900) {
+                        playCompletionSound();
+                    }
+
+                    // Last 5 seconds (beep once per second)
+                    if (remaining > 0 && remaining <= 5 && remaining !== state.lastSecondBeep) {
+                        playCompletionSound();
+                        state.lastSecondBeep = remaining;
+                    }
+                }
+
+                if (state.remainingSeconds <= 0) {
+                    state.isRunning = false;
+                    playPauseBtn.textContent = 'Play';
+                    if (state.playSound) {
+                        playCompletionSound();
+                    }
+                    hideControls();
+                }
+            }
+        }
+
+        function updateDisplay() {
+            const hours = Math.floor(state.remainingSeconds / 3600);
+            const minutes = Math.floor((state.remainingSeconds % 3600) / 60);
+            const seconds = Math.floor(state.remainingSeconds % 60);
+
+            timerDisplay.textContent =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }
+
+        function enterEditMode() {
+            const currentValue = timerDisplay.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentValue;
+            input.className = 'timer-display';
+            input.style.textAlign = 'center';
+            input.style.borderColor = 'var(--accent)';
+            input.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+            input.style.width = '90%';
+
+            const wrapper = input;
+
+            timerDisplay.parentNode.replaceChild(wrapper, timerDisplay);
+            input.focus();
+            input.select();
+
+            function finishEdit() {
+                const value = input.value.trim();
+                if (parseTime(value) !== null) {
+                    const totalSec = parseTime(value);
+                    state.totalSeconds = totalSec;
+                    state.remainingSeconds = totalSec;
+                    state.lastSecondBeep = -1;
+                }
+                updateDisplay();
+                wrapper.parentNode.replaceChild(timerDisplay, wrapper);
+                timerDisplay.classList.remove('editable');
+            }
+
+            input.addEventListener('blur', finishEdit);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    finishEdit();
+                }
+                if (e.key === 'Escape') {
+                    updateDisplay();
+                    wrapper.parentNode.replaceChild(timerDisplay, wrapper);
+                    timerDisplay.classList.remove('editable');
+                }
+            });
+        }
+
+        function parseTime(str) {
+            const parts = str.split(':');
+            if (parts.length !== 3) return null;
+            const h = parseInt(parts[0]);
+            const m = parseInt(parts[1]);
+            const s = parseInt(parts[2]);
+            if (isNaN(h) || isNaN(m) || isNaN(s)) return null;
+            if (m >= 60 || s >= 60) return null;
+            return h * 3600 + m * 60 + s;
+        }
+
+        function openConfig() {
+            configPanel.classList.add('open');
+            populateForm();
+        }
+
+        function closeConfig() {
+            configPanel.classList.remove('open');
+        }
+
+        function populateForm() {
+            iconInput.value = icon.textContent;
+            titleInput.value = title.textContent;
+            subtitle1Input.value = subtitle1.textContent;
+            subtitle2Input.value = subtitle2.textContent;
+            bgColorInput.value = rgbToHex(getComputedStyle(document.body).backgroundColor);
+            fgPrimaryColorInput.value = rgbToHex(getComputedStyle(title).color);
+            fgSecondaryColorInput.value = rgbToHex(getComputedStyle(subtitle1).color);
+            soundCheckbox.checked = state.playSound;
+
+            const h = Math.floor(state.totalSeconds / 3600);
+            const m = Math.floor((state.totalSeconds % 3600) / 60);
+            const s = state.totalSeconds % 60;
+            timeInput.value =
+                String(h).padStart(2, '0') + ':' +
+                String(m).padStart(2, '0') + ':' +
+                String(s).padStart(2, '0');
+        }
+
+        function saveConfig() {
+            const time = parseTime(timeInput.value);
+            if (time === null) {
+                alert('Invalid time format. Use HH:MM:SS');
+                return;
+            }
+
+            icon.textContent = iconInput.value || '';
+            title.textContent = titleInput.value || '';
+            subtitle1.textContent = subtitle1Input.value;
+            subtitle2.textContent = subtitle2Input.value;
+            state.totalSeconds = time;
+            state.remainingSeconds = time;
+            state.lastSecondBeep = -1;
+            state.playSound = soundCheckbox.checked;
+
+            document.documentElement.style.setProperty('--bg-color', bgColorInput.value);
+            document.documentElement.style.setProperty('--fg-primary', fgPrimaryColorInput.value);
+            document.documentElement.style.setProperty('--fg-secondary', fgSecondaryColorInput.value);
+            document.body.style.backgroundColor = bgColorInput.value;
+            document.body.style.color = fgPrimaryColorInput.value;
+
+            updateDisplay();
+            saveConfigToStorage();
+            closeConfig();
+        }
+
+        function saveConfigToStorage() {
+            const config = {
+                icon: icon.textContent,
+                title: title.textContent,
+                subtitle1: subtitle1.textContent,
+                subtitle2: subtitle2.textContent,
+                totalSeconds: state.totalSeconds,
+                bgColor: bgColorInput.value,
+                fgPrimaryColor: fgPrimaryColorInput.value,
+                fgSecondaryColor: fgSecondaryColorInput.value,
+                playSound: state.playSound
+            };
+            localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+        }
+
+        function loadConfig() {
+            const stored = localStorage.getItem(CONFIG_KEY);
+            if (stored) {
+                try {
+                    const config = JSON.parse(stored);
+                    icon.textContent = config.icon || '';
+                    title.textContent = config.title || '';
+                    subtitle1.textContent = config.subtitle1 || '';
+                    subtitle2.textContent = config.subtitle2 || '';
+                    state.totalSeconds = config.totalSeconds || 1800;
+                    state.remainingSeconds = state.totalSeconds;
+                    state.playSound = config.playSound !== false;
+
+                    const bgColor = config.bgColor || '#ffffff';
+                    const fgPrimaryColor = config.fgPrimaryColor || '#000000';
+                    const fgSecondaryColor = config.fgSecondaryColor || '#666666';
+
+                    document.documentElement.style.setProperty('--bg-color', bgColor);
+                    document.documentElement.style.setProperty('--fg-primary', fgPrimaryColor);
+                    document.documentElement.style.setProperty('--fg-secondary', fgSecondaryColor);
+                    document.body.style.backgroundColor = bgColor;
+                    document.body.style.color = fgPrimaryColor;
+                } catch (e) {
+                    console.error('Failed to load config:', e);
+                }
+            }
+        }
+
+        function rgbToHex(rgb) {
+            const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (!match) return '#ffffff';
+            const hex = (x) => parseInt(x).toString(16).padStart(2, '0');
+            return '#' + hex(match[1]) + hex(match[2]) + hex(match[3]);
+        }
+
+        function playCompletionSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Close config on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && configPanel.classList.contains('open')) {
+                closeConfig();
+            }
+        });
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
+    </script>
 </body>
+
 </html>
