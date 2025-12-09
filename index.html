@@ -417,7 +417,8 @@
             remainingSeconds: 1800,
             hideControlsTimeout: null,
             playSound: true,
-            lastSecondBeep: -1
+            lastSecondBeep: -1,
+            deadline: null,
         };
 
         // DOM elements
@@ -514,11 +515,19 @@
 
         function togglePlayPause() {
             if (!state.isRunning) {
+                if (!state.deadline) {
+                    state.deadline = Date.now() + state.remainingSeconds * 1000;
+                }
                 state.isRunning = true;
                 playPauseBtn.textContent = 'Pause';
                 requestWakeLock();
             } else {
                 state.isRunning = false;
+                if (state.deadline) {
+                    const remaining = Math.max(0, (state.deadline - Date.now()) / 1000);
+                    state.remainingSeconds = remaining;
+                    state.deadline = null;
+                }
                 playPauseBtn.textContent = 'Play';
                 hideControls();
                 releaseWakeLock();
@@ -529,17 +538,17 @@
             state.isRunning = false;
             state.remainingSeconds = state.totalSeconds;
             state.lastSecondBeep = -1;
+            state.deadline = null;
             playPauseBtn.textContent = 'Play';
             updateDisplay();
             releaseWakeLock();
         }
 
         function tick() {
-            if (state.isRunning && state.remainingSeconds > 0) {
-                state.remainingSeconds -= 0.1;
-                if (state.remainingSeconds < 0) {
-                    state.remainingSeconds = 0;
-                }
+            if (state.isRunning && state.deadline) {
+                const now = Date.now();
+                const remaining = Math.max(0, (state.deadline - now) / 1000);
+                state.remainingSeconds = remaining;
                 updateDisplay();
 
                 // Check for sound triggers
@@ -566,6 +575,7 @@
 
                 if (state.remainingSeconds <= 0) {
                     state.isRunning = false;
+                    state.deadline = null;
                     playPauseBtn.textContent = 'Play';
                     if (state.playSound) {
                         playCompletionSound();
@@ -608,6 +618,7 @@
                     const totalSec = parseTime(value);
                     state.totalSeconds = totalSec;
                     state.remainingSeconds = totalSec;
+                    state.deadline = null;
                     state.lastSecondBeep = -1;
                 }
                 updateDisplay();
